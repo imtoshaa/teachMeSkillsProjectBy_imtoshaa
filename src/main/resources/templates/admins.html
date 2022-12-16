@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en">
+<head>
+    <title>Shopping cart</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link th:href="@{/css/mystyle.css}" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://kit.fontawesome.com/2a28c847cb.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css"
+          rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#mynavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mynavbar">
+            <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="navbar-brand" th:href="@{/home}">
+                            <img
+                                src="https://uploads.turbologo.com/uploads/design/hq_preview_image/87878/draw_svg20210814-32701-t5984m.svg.png"
+                                alt="" width="30" height="30" class="d-inline-block align-text-top">Главная страница</a>
+                    </li>
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
+                        <a class="nav-link" th:href="@{/mypage}">Личные данные</a>
+                    </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:href="@{/cart/open}">Корзина</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/filter}">Фильтр запчастей</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" th:href="@{/logout}">Выйти</a>
+                </li>
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" th:href="@{/login}">Войти</a>
+                </li>
+                <li class="nav-item">
+                    <form method="post" th:action="@{/search}" class="d-flex">
+                        <input class="form-control me-2" type="text" id="searchQuery"
+                               name="searchQuery" placeholder="Search" th:text="${searchQuery}">
+                        <button class="btn btn-primary" type="submit">
+                            Search
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container d-flex align-items-center justify-content-center">
+    <div class="row" style="margin-top: 40px">
+
+        <!--        Бренд-->
+        <div class="col">
+            <div class="col">
+                <div class="card" style="width: 25rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Бренды</h5>
+
+                        <div class="card" style="width: 22.25rem;">
+                            <div class="card-body">
+                                <h6 class="card-title">Загрузка файла с брендами</h6>
+                                <form method="POST" enctype="multipart/form-data"
+                                      th:action="@{/admins/upload/brands}">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <div class="custom-file mb-3">
+                                                <input type="file" class="custom-file-input" id="brand-file"
+                                                       name="file">
+                                                <label class="custom-file-label" for="brand-file">Файл</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <span th:text="${brandsUploadMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card" style="width: 22.25rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Добавление бренда</h6>
+                                <form method="POST" th:action="@{/admins/create/brand}">
+                                    <div class="custom-file mb-3">
+                                        <label for="new-brand" class="form-label">Введите бренд</label>
+                                        <input type="text" class="form-control" id="new-brand" name="brand">
+                                        <label for="newBrandImagePath" class="form-label">Введите адрес
+                                            картинки</label>
+                                        <input type="text" class="form-control" id="newBrandImagePath"
+                                               name="imagePath">
+                                    </div>
+                                    <span th:text="${brandCreateMessage}"></span>
+                                    <button type="submit" class="btn btn-primary" style="margin-top: 20px">Сохранить
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card" style="width: 22.25rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Удаление бренда</h6>
+                                <form method="post" th:action="@{/admins/delete/brand}">
+                                    <div class="custom-file mb-3">
+                                        <select style="margin-top: 10px" class="form-control" id="delete-brand"
+                                                name="brand">
+                                            <option>Выберите бренд</p></option>
+                                            <td th:each="brand : ${#session.getAttribute('adminBrands')}">
+                                                <option><p th:text="${brand.brand}"></p></option>
+                                            </td>
+                                        </select>
+                                    </div>
+                                    <span th:text="${brandDeleteMessage}"></span>
+                                    <button type="submit" class="btn btn-primary" style="margin-top: 20px">Удалить
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!--    Модель-->
+        <div class="col">
+            <div class="row">
+                <div class="col">
+                    <div class="card" style="width: 40rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">Модели</h5>
+
+                            <div class="card" style="width: 37.3rem;">
+                                <div class="card-body">
+                                    <h6 class="card-title">Загрузка файла с моделями</h6>
+                                    <form method="post" enctype="multipart/form-data"
+                                          th:action="@{/admins/upload/models}">
+                                        <div class="row">
+                                            <div class="col-9">
+                                                <div class="custom-file mb-3">
+                                                    <h5 class="card-title">Загрузка файла</h5>
+                                                    <input type="file" class="custom-file-input" id="model-file"
+                                                           name="file">
+                                                    <label class="custom-file-label" for="model-file">Файл</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <span th:text="${modelsUploadMessage}"></span>
+                                                <button type="submit" class="btn btn-primary">Загрузить</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card" style="width: 37.3rem; margin-top: 20px">
+                                <div class="card-body">
+                                    <h6 class="card-title">Добавление модели</h6>
+                                    <form method="post" th:action="@{/admins/create/model}">
+                                        <div class="row">
+                                            <div class="col-9">
+                                                <div class="custom-file mb-3">
+                                                    <label for="brand-model-add" class="form-label">Выберите
+                                                        бренд</label>
+                                                    <select style="margin-top: 10px" class="form-control"
+                                                            id="brand-model-add"
+                                                            name="brand">
+                                                        <option><p th:text="${nameBrandOption}"></p></option>
+                                                        <td th:each="brand : ${#session.getAttribute('adminBrands')}">
+                                                            <option><p th:text="${brand.brand}"></p></option>
+                                                        </td>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row" style="margin-top: 25px">
+                                            <div class="col-9">
+                                                <div class="custom-file mb-3">
+                                                    <label for="new-model" class="form-label">Введите модель для
+                                                        добавления</label>
+                                                    <input type="text" class="form-control" id="new-model" name="model">
+                                                </div>
+                                            </div>
+                                            <div class="col-3" style="margin-top: 32px">
+                                                <span th:text="${modelCreateMessage}"></span>
+                                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="card" style="width: 37.5rem; margin-top: 20px">
+                                <div class="card-body">
+                                    <h6 class="card-title">Удаление модели</h6>
+                                    <form method="post" th:action="@{/admins/delete/model}">
+                                        <div class="row">
+                                            <div class="col-9">
+                                                <div class="custom-file mb-3">
+                                                    <label for="brand-model-delete" class="form-label">Выберите
+                                                        бренд</label>
+                                                    <select style="margin-top: 10px" class="form-control"
+                                                            id="brand-model-delete"
+                                                            name="brand">
+                                                        <option>Выберите бренд</p></option>
+                                                        <td th:each="brand : ${#session.getAttribute('adminBrands')}">
+                                                            <option><p th:text="${brand.brand}"></p></option>
+                                                        </td>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-3" style="margin-top: 42px">
+                                                <button type="submit" class="btn btn-primary">Выбрать</button>
+                                            </div>
+                                        </div>
+                                        <div class="row" style="margin-top: 25px">
+                                            <div class="col-9">
+                                                <div class="custom-file mb-3">
+                                                    <label for="delete-model" class="form-label">Выберите модель для
+                                                        удаления</label>
+                                                    <select style="margin-top: 10px" class="form-control"
+                                                            id="delete-model"
+                                                            name="model">
+                                                        <option>Выберите модель</option>
+                                                        <td th:each="model : ${models}">
+                                                            <option><p th:text="${model.model}"></p></option>
+                                                        </td>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-3" style="margin-top: 42px">
+                                                <span th:text="${modelDeleteMessage}"></span>
+                                                <button type="submit" class="btn btn-primary">Удалить</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container d-flex align-items-center justify-content-center">
+    <div class="row" style="margin-top: 40px">
+
+        <!--        Трансмиссия-->
+        <div class="col-4">
+            <div class="col">
+                <div class="card" style="width: 23rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Трансмиссия</h5>
+                        <div class="card" style="width: 20.4rem;">
+                            <div class="card-body">
+                                <h6 class="card-title">Загрузка файла с трансмиссиями</h6>
+                                <form method="post" enctype="multipart/form-data"
+                                      th:action="@{/admins/upload/transmission}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="file" class="custom-file-input" id="transmission-file"
+                                                       name="file">
+                                                <label class="custom-file-label" for="transmission-file">Файл</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span th:text="${transmissionsUploadMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Введите название трансмиссии</h6>
+                                <form method="post" th:action="@{/admins/create/transmission}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <input type="text" class="form-control" id="new-transmission"
+                                                   name="transmission">
+                                        </div>
+                                        <div class="col-5" style="margin-top: 0px">
+                                            <span th:text="${transmissionCreateMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Удаление трансмиссии</h6>
+                                <form method="post" th:action="@{/admins/delete/transmission}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <select style="margin-top: 10px" class="form-control"
+                                                        id="delete-transmission"
+                                                        name="transmission">
+                                                    <option>Выберите трансмиссию</option>
+                                                    <td th:each="transmission : ${#session.getAttribute('adminTransm')}">
+                                                        <option><p th:text="${transmission.transmission}"></p></option>
+                                                    </td>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top: 10px">
+
+                                            <span th:text="${transmissionDeleteMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Удалить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--        Тип топлива-->
+        <div class="col-4">
+            <div class="col">
+                <div class="card" style="width: 23rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Тип топлива</h5>
+                        <div class="card" style="width: 20.5rem;">
+                            <div class="card-body">
+                                <h6 class="card-title">Загрузка файла с типами топлива</h6>
+                                <form method="post" enctype="multipart/form-data"
+                                      th:action="@{/admins/upload/fuels}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="file" class="custom-file-input" id="fuel-file" name="file">
+                                                <label class="custom-file-label" for="fuel-file">Файл</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span th:text="${fuelsUploadMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Добавление типа топлива</h6>
+                                <form method="post" th:action="@{/admins/create/fuel-type}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="text" class="form-control" id="new-fuel-type"
+                                                       name="typeFuel">
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top: 0px">
+                                            <span th:text="${fuelCreateMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Удаление типа топлива</h6>
+                                <form method="post" th:action="@{/admins/delete/fuel-type}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <select style="margin-top: 10px" class="form-control"
+                                                        id="delete-fuel-type"
+                                                        name="fuelType">
+                                                    <option>Выберите тип топлива</option>
+                                                    <td th:each="fuelType : ${#session.getAttribute('adminFuelTypes')}">
+                                                        <option><p th:text="${fuelType.typeFuel}"></p></option>
+                                                    </td>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top: 10px">
+                                            <span th:text="${fuelDeleteMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Удалить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--        Кузов-->
+        <div class="col-4">
+            <div class="card" style="width: 23rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Кузов</h5>
+                    <div class="card" style="width: 20.5rem;">
+                        <div class="card-body">
+                            <h6 class="card-title">Загрузка файла с кузовами</h6>
+                            <form method="post" enctype="multipart/form-data"
+                                  th:action="@{/admins/upload/bodies}">
+                                <div class="row">
+                                    <div class="col-7">
+                                        <div class="custom-file mb-3">
+                                            <input type="file" class="custom-file-input" id="body-file" name="file">
+                                            <label class="custom-file-label" for="body-file">Файл</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <span th:text="${bodiesUploadMessage}"></span>
+                                        <button type="submit" class="btn btn-primary">Загрузить</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card" style="width: 20.5rem; margin-top: 20px">
+                        <div class="card-body">
+                            <h6 class="card-title">Добавление типа кузова </h6>
+                            <form method="post" th:action="@{/admins/create/body}">
+                                <div class="row">
+                                    <div class="col-7">
+                                        <div class="custom-file mb-3">
+                                            <input type="text" class="form-control" id="new-body" name="body">
+                                        </div>
+                                    </div>
+                                    <div class="col-5" style="margin-top: 0px">
+                                        <span th:text="${bodyCreateMessage}"></span>
+                                        <button type="submit" class="btn btn-primary">Загрузить</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card" style="width: 20.5rem; margin-top: 20px">
+                        <div class="card-body">
+                            <h6 class="card-title">Удаление типа кузова</h6>
+                            <form method="post" th:action="@{/admins/delete/body}">
+                                <div class="row">
+                                    <div class="col-7">
+                                        <div class="custom-file mb-3">
+                                            <select style="margin-top: 10px" class="form-control" id="delete-body"
+                                                    name="body-type">
+                                                <option>Выберите кузов</option>
+                                                <td th:each="body : ${#session.getAttribute('adminBodies')}">
+                                                    <option><p th:text="${body.body}"></p></option>
+                                                </td>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-5" style="margin-top: 0px">
+                                        <span th:text="${bodyDeleteMessage}"></span>
+                                        <button type="submit" class="btn btn-primary">Удалить</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container d-flex align-items-center justify-content-center">
+    <div class="row" style="margin-top: 40px">
+        <div class="card" style="width: 60rem; margin-top: 20px">
+            <div class="card-body">
+                <h5 class="card-title">Автомобиль</h5>
+
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card" style="width: 29rem; margin-top: 0px">
+                            <div class="card-body">
+                                <h6 class="card-title">Загрузка файла с автомобилями</h6>
+                                <form method="post" enctype="multipart/form-data"
+                                      th:action="@{/admins/upload/cars}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="file" class="custom-file-input" id="car-file" name="file">
+                                                <label class="custom-file-label" for="car-file">Файл</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span th:text="${carsUploadMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="card" style="width: 27.7rem; margin-top: 0px">
+                            <div class="card-body">
+                                <h6 class="card-title">Введите артикул автомобиля для удаления</h6>
+                                <form method="post" th:action="@{/admins/delete/car}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="text" class="form-control" id="delete-car-code"
+                                                       name="car-code">
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top: 0px">
+                                            <span th:text="${carDeleteMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Удалить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card" style="width: 57.5rem; margin-top: 20px">
+                    <div class="card-body">
+                        <h6 class="card-title">Добавление нового автомобиля</h6>
+                        <form method="post" th:action="@{/admins/create/car}">
+                            <div class="row" style="margin-top: 10px">
+                                <div class="col-3">
+                                    <p class="card-text">Бренд</p>
+                                    <select style="margin-top: 10px" class="form-control" id="car-brand"
+                                            name="brand">
+                                        <option>Выберите бренд</p></option>
+                                        <td th:each="brand : ${#session.getAttribute('adminBrands')}">
+                                            <option><a type="submit" th:text="${brand.brand}"></a></option>
+                                        </td>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <p class="card-text">Модель</p>
+                                    <select style="margin-top: 10px" class="form-control" id="car-model"
+                                            name="model">
+                                        <option>Выберите модель</option>
+                                        <td th:each="model : ${#session.getAttribute('adminModels')}">
+                                            <option><p th:text="${model.model}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <p class="card-text">Тип топлива</p>
+                                    <select style="margin-top: 10px" class="form-control" id="car-fuel-type"
+                                            name="typeFuel">
+                                        <option>Выберите топливо</option>
+                                        <td th:each="fuelType : ${#session.getAttribute('adminFuelTypes')}">
+                                            <option><p th:text="${fuelType.typeFuel}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <p class="card-text">Трансмиссия</p>
+                                    <select style="margin-top: 10px" class="form-control" id="car-transmission"
+                                            name="transmission">
+                                        <option>Выберите трансмиссию</option>
+                                        <td th:each="transmission : ${#session.getAttribute('adminTransm')}">
+                                            <option><p th:text="${transmission.transmission}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top: 20px;">
+                                <div class="col-3">
+                                    <p class="card-text">Кузов</p>
+                                    <select style="margin-top: 10px" class="form-control" id="car-body"
+                                            name="body">
+                                        <option>Выберите кузов</option>
+                                        <td th:each="body : ${#session.getAttribute('adminBodies')}">
+                                            <option><p th:text="${body.body}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="car-code" class="form-label">Введите артикул а/м</label>
+                                    <input type="text" class="form-control" id="car-code" name="carCode">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="car-engine-id" class="form-label">Маркировка двигателя</label>
+                                    <input type="text" class="form-control" id="car-engine-id" name="engineId">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="engine-cc" class="form-label">Объём двигателя</label>
+                                    <input type="text" class="form-control" id="engine-cc" name="engineCC">
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top: 20px;">
+
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="car-engine-features" class="form-label">Особенность двигателя</label>
+                                    <input type="text" class="form-control" id="car-engine-features"
+                                           name="engineFeatures">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="car-vin" class="form-label">VIN</label>
+                                    <input type="text" class="form-control" id="car-vin" name="vin">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="car-year" class="form-label">Год выпуска</label>
+                                    <input type="number" class="form-control" id="car-year" name="year">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="car-color" class="form-label">Цвет</label>
+                                    <input type="text" class="form-control" id="car-color" name="color">
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top: 20px;">
+                                <div class="col-6" style="margin-top: 8px;">
+                                    <label for="car-image-path" class="form-label">Ссылка на картинку</label>
+                                    <input type="text" class="form-control" id="car-image-path" name="imagePath">
+                                </div>
+                                <div class="col-6" style="margin-top: 8px;">
+                                    <span th:text="${carCreateMessage}"></span>
+                                    <button type="submit" style="margin-top: 32px" class="btn btn-primary">Сохранить
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container d-flex align-items-center justify-content-center">
+    <div class="row" style="margin-top: 40px">
+
+        <!--        Тип запчасти-->
+        <div class="col-4">
+            <div class="col">
+                <div class="card" style="width: 23.2rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Тип запчасти</h5>
+                        <div class="card" style="width: 20.4rem;">
+                            <div class="card-body">
+                                <h6 class="card-title">Загрузка файла с запчастами</h6>
+                                <form method="post" enctype="multipart/form-data"
+                                      th:action="@{/admins/upload/types}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="file" class="custom-file-input" id="part-types-file"
+                                                       name="file">
+                                                <label class="custom-file-label" for="part-types-file">Файл</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span th:text="${partTypesUploadMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Введите тип запчасти</h6>
+                                <form method="post" th:action="@{/admins/create/part-type}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <input type="text" class="form-control" id="new-part-type"
+                                                   name="type">
+                                        </div>
+                                        <div class="col-5" style="margin-top: 0px">
+                                            <span th:text="${partTypeCreateMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Добавление новой запчасти</h6>
+                                <form method="post" th:action="@{/admins/delete/part-type}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <select style="margin-top: 10px" class="form-control"
+                                                        id="delete-part-type"
+                                                        name="part-type">
+                                                    <option>Выберите тип запчасти</option>
+                                                    <td th:each="partType : ${#session.getAttribute('adminPartTypes')}">
+                                                        <option><p th:text="${partType.type}"></p></option>
+                                                    </td>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top: 10px">
+
+                                            <span th:text="${partTypeDeleteMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Удалить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--        Направление запчасти-->
+        <div class="col-4">
+            <div class="col">
+                <div class="card" style="width: 22.4rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Направление запчасти</h5>
+                        <div class="card" style="width: 20.5rem;">
+                            <div class="card-body">
+                                <h6 class="card-title">Загрузка файла с запчастями</h6>
+                                <form method="post" enctype="multipart/form-data"
+                                      th:action="@{/admins/upload/directions}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="file" class="custom-file-input" id="part-direction-file"
+                                                       name="file">
+                                                <label class="custom-file-label" for="part-direction-file">Файл</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span th:text="${directionsUploadMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Введите направление запчасти</h6>
+                                <form method="post" th:action="@{/admins/create/direction}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="text" class="form-control" id="new-part-direction"
+                                                       name="direction">
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top: 0px">
+                                            <span th:text="${directionCreateMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card" style="width: 20.5rem; margin-top: 20px">
+                            <div class="card-body">
+                                <h6 class="card-title">Удаление направления запчасти</h6>
+                                <form method="post" th:action="@{/admins/delete/direction}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <select style="margin-top: 10px" class="form-control"
+                                                        id="delete-part-direction"
+                                                        name="direction">
+                                                    <option>Выберите направление</option>
+                                                    <td th:each="direction : ${#session.getAttribute('adminTypeDirections')}">
+                                                        <option><p th:text="${direction.direction}"></p></option>
+                                                    </td>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top:10px">
+                                            <span th:text="${directionDeleteMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Удалить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--        Сторона запчасти-->
+        <div class="col-4">
+            <div class="card" style="width: 22.4rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Сторона запчасти</h5>
+                    <div class="card" style="width: 20.5rem;">
+                        <div class="card-body">
+                            <h6 class="card-title">Загрузка файла со сторонами запчасти</h6>
+                            <form method="post" enctype="multipart/form-data" th:action="@{/admins/upload/sides}">
+                                <div class="row">
+                                    <div class="col-7">
+                                        <div class="custom-file mb-3">
+                                            <input type="file" class="custom-file-input" id="side-file" name="file">
+                                            <label class="custom-file-label" for="side-file">Файл</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <span th:text="${sidesUploadMessage}"></span>
+                                        <button type="submit" class="btn btn-primary">Загрузить</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card" style="width: 20.5rem; margin-top: 20px">
+                        <div class="card-body">
+                            <h6 class="card-title">Введите сторону запчасти</h6>
+                            <form method="post" th:action="@{/admins/create/side}">
+                                <div class="row">
+                                    <div class="col-7">
+                                        <div class="custom-file mb-3">
+                                            <input type="text" class="form-control" id="new-part-side" name="side">
+                                        </div>
+                                    </div>
+                                    <div class="col-5" style="margin-top: 0px">
+                                        <span th:text="${sideCreateMessage}"></span>
+                                        <button type="submit" class="btn btn-primary">Загрузить</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card" style="width: 20.5rem; margin-top: 20px">
+                        <div class="card-body">
+                            <h6 class="card-title">Удаление стороны запчасти</h6>
+                            <form method="post" th:action="@{/admins/delete/side}">
+                                <div class="row">
+                                    <div class="col-7">
+                                        <div class="custom-file mb-3">
+                                            <select style="margin-top: 10px" class="form-control" id="delete-part-side"
+                                                    name="side">
+                                                <option>Выберите сторону</option>
+                                                <td th:each="side : ${#session.getAttribute('adminTypeSides')}">
+                                                    <option><p th:text="${side.side}"></p></option>
+                                                </td>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-5" style="margin-top: 10px">
+                                        <span th:text="${sideDeleteMessage}"></span>
+                                        <button type="submit" class="btn btn-primary">Удалить</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container d-flex align-items-center justify-content-center">
+
+    <div class="row" style="margin-top: 0px">
+        <div class="card" style="width: 60rem; margin-top: 20px">
+            <div class="card-body">
+                <h5 class="card-title">Запчасть</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card" style="width: 29rem; margin-top: 0px">
+                            <div class="card-body">
+                                <h6 class="card-title">Загрузка файла с запчастями</h6>
+                                <form method="post" enctype="multipart/form-data"
+                                      th:action="@{/admins/upload/parts}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="file" class="custom-file-input" id="part-file" name="file">
+                                                <label class="custom-file-label" for="part-file">Файл</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-5">
+                                            <span th:text="${partsUploadMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <div class="card" style="width: 27.8rem; margin-top: 0px">
+                            <div class="card-body">
+                                <h6 class="card-title">Введите артикул запчасти для удаления</h6>
+                                <form method="post" th:action="@{/admins/delete/part}">
+                                    <div class="row">
+                                        <div class="col-7">
+                                            <div class="custom-file mb-3">
+                                                <input type="text" class="form-control" id="delete-part-code"
+                                                       name="part-code">
+                                            </div>
+                                        </div>
+                                        <div class="col-5" style="margin-top: 0px">
+                                            <span th:text="${partDeleteMessage}"></span>
+                                            <button type="submit" class="btn btn-primary">Удалить</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card" style="width: 57.5rem; margin-top: 20px">
+                    <div class="card-body">
+                        <form method="post" th:action="@{/admins/create/part}">
+                            <div class="row">
+                                <div class="col-3">
+                                    <p class="card-text">Автомобиль</p>
+                                    <select style="margin-top: 10px" class="form-control" id="part-car-code"
+                                            name="carCode">
+                                        <option>Выберите артикул автомобиля</option>
+                                        <td th:each="car : ${#session.getAttribute('adminCars')}">
+                                            <option><p th:text="${car.carCode}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <p class="card-text">Тип запчасти</p>
+                                    <select style="margin-top: 10px" class="form-control" id="part-type"
+                                            name="type">
+                                        <option>Выберите тип запчасти</option>
+                                        <td th:each="partType : ${#session.getAttribute('adminPartTypes')}">
+                                            <option><p th:text="${partType.type}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <p class="card-text">Направление запчасти</p>
+                                    <select style="margin-top: 10px" class="form-control" id="part-direction"
+                                            name="direction">
+                                        <option>Выберите направление</option>
+                                        <td th:each="direction : ${#session.getAttribute('adminTypeDirections')}">
+                                            <option><p th:text="${direction.direction}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <p class="card-text">Сторона запчасти</p>
+                                    <select style="margin-top: 10px" class="form-control" id="part-side"
+                                            name="side">
+                                        <option>Выберите сторону</option>
+                                        <td th:each="side : ${#session.getAttribute('adminTypeSides')}">
+                                            <option><p th:text="${side.side}"></p></option>
+                                        </td>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row" style="margin-top: 20px;">
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="part-construction-number" class="form-label">Конструкционный
+                                        номер</label>
+                                    <input type="text" class="form-control" id="part-construction-number"
+                                           name="constructionNumber">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="part-price" class="form-label">Цена</label>
+                                    <input type="number" class="form-control" id="part-price" name="price">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="part-code" class="form-label">Артикул запчасти</label>
+                                    <input type="text" class="form-control" id="part-code" name="partCode">
+                                </div>
+                                <div class="col-3" style="margin-top: 8px;">
+                                    <label for="part-image-path" class="form-label">Ссылка на картинку</label>
+                                    <input type="text" class="form-control" id="part-image-path" name="imagePath">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="part-description">Введите описание</label>
+                                <textarea class="form-control" id="part-description" name="description"
+                                          rows="3"></textarea>
+                            </div>
+                            <span th:text="${partCreateMessage}"></span>
+                            <button type="submit" class="btn btn-primary">Сохранить</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<footer class="bg-dark text-center text-white">
+    <div class="container p-4 pb-0">
+        <div class="row">
+            <section class="col-6">
+                <p class="font-weight-light m1">Anton Auseichyk</p>
+                <a class="btn btn-outline-light btn-floating m-1"
+                   href="https://www.linkedin.com/in/imtoshaa/"
+                   role="button">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a class="btn btn-outline-light btn-floating m-1" href="https://github.com/imtoshaa"
+                   role="button"
+                ><i class="fab fa-github"></i
+                ></a>
+            </section>
+            <section class="col-6">
+                <p class="font-weight-light m1">Maximilian Poltorzhickiy</p>
+                <a class="btn btn-outline-light btn-floating m-1"
+                   href="https://www.linkedin.com/in/maximilian-poltorzhickiy-5130a9150/" role="button">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a class="btn btn-outline-light btn-floating m-1"
+                   href="https://github.com/MaximilianBY?tab=repositories" role="button"
+                ><i class="fab fa-github"></i
+                ></a>
+            </section>
+        </div>
+    </div>
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+        © 2022 TeachMeSkills C12onl/java
+    </div>
+</footer>
+</html>
